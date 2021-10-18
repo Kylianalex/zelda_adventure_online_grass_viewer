@@ -1,0 +1,75 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+        <style>
+        #mapid { height: 100%; width: 100%}
+        /* Leaflet crispness override */
+        .leaflet-container .leaflet-overlay-pane svg,
+        .leaflet-container .leaflet-marker-pane img,
+        .leaflet-container .leaflet-shadow-pane img,
+        .leaflet-container .leaflet-tile-pane img,
+        .leaflet-container img.leaflet-image-layer {
+            max-width: none !important;
+            /* Preserve crisp pixels with scaled up images */
+            image-rendering: optimizeSpeed;             /* Legal fallback */
+            image-rendering: -moz-crisp-edges;          /* Firefox        */
+            image-rendering: -o-crisp-edges;            /* Opera          */
+            image-rendering: -webkit-optimize-contrast; /* Safari         */
+            image-rendering: optimize-contrast;         /* CSS3 Proposed  */
+            image-rendering: crisp-edges;               /* CSS4 Proposed  */
+            image-rendering: pixelated;                 /* CSS4 Proposed  */
+            -ms-interpolation-mode: nearest-neighbor;   /* IE8+           */
+        }
+        </style>
+    </head>
+    <body ondragover="event.stopPropagation(); event.preventDefault();" ondrop="event.stopPropagation(); event.preventDefault(); dodrop(event);">
+        <div id="mapid"></div>
+        <script>
+        const splitLines = str => str.split(/\r?\n/);
+        const addx = 944;
+        const addz = 1456;
+        const width = 2191;
+        const height = 2335;
+        var map = L.map('mapid', {minZoom: -2, maxZoom: 5, crs: L.CRS.Simple}).setView([height - (addz + -69), addx + 0], 1);
+        L.imageOverlay("./image.png", [[0, 0], [height, width]]).addTo(map);
+        var myIcon = L.icon({iconUrl: 'spawn.png', iconSize: [16, 16], iconAnchor: [8, 8]});
+        L.marker([height - (addz + -69), addx + 0], {icon: myIcon}).addTo(map);
+        
+        function dodrop() {
+            console.log("elo");
+            var dt = event.dataTransfer;
+            var files = dt.files;
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var lines = splitLines(reader.result);
+                lines.shift();
+                if (!lines.at(-1)) {
+                    lines.pop()
+                }
+                for (const line of lines) {
+                    data = line.split(" ")
+                    if (data.length == 3) {
+                        if (parseInt(data[0]) == NaN) {
+                            continue;
+                        }
+                        if (parseInt(data[1]) == NaN) {
+                            continue;
+                        }
+                        if (parseInt(data[2]) == NaN) {
+                            continue;
+                        }
+                        var z = height - (addz + parseInt(data[2]));
+                        var x = addx + parseInt(data[0]);
+                        L.marker([z, x]).addTo(map).bindPopup("x:" + data[0] + "<br>y:" + data[1] + "<br>z:" + data[2])
+                    }
+                }
+            }
+            console.log(dt.constructor.name);
+            console.log(files.constructor.name);
+            console.log(files[0]);
+            reader.readAsText(files[0]);
+        }
+        </script>
+    </body>
+</html>
